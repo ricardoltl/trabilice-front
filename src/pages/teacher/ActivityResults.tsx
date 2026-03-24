@@ -53,6 +53,41 @@ export default function ActivityResults() {
     return "var(--danger)";
   }
 
+  function formatTime(seconds: number | null): string {
+    if (seconds === null) return "—";
+    if (seconds < 60) return `${seconds}s`;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return s > 0 ? `${m}min ${s}s` : `${m}min`;
+  }
+
+  function getTimeLabel(seconds: number, avgSeconds: number | null): string {
+    if (!avgSeconds) return formatTime(seconds);
+    const ratio = seconds / avgSeconds;
+    if (ratio < 0.5) return `${formatTime(seconds)} (muito rápido)`;
+    if (ratio < 0.8) return `${formatTime(seconds)} (abaixo da média)`;
+    if (ratio > 2.0) return `${formatTime(seconds)} (muito lento)`;
+    if (ratio > 1.3) return `${formatTime(seconds)} (acima da média)`;
+    return `${formatTime(seconds)} (na média)`;
+  }
+
+  function getBehaviorPattern(s: any): string {
+    const fast = s.completion_time_seconds !== null && summary.avg_completion_time_seconds !== null
+      && s.completion_time_seconds < summary.avg_completion_time_seconds * 0.7;
+    const slow = s.completion_time_seconds !== null && summary.avg_completion_time_seconds !== null
+      && s.completion_time_seconds > summary.avg_completion_time_seconds * 1.4;
+    const highScore = s.score >= 70;
+    const lowScore = s.score < 40;
+
+    if (fast && highScore) return "Respondeu rápido e com alta precisão. Provavelmente já dominava o conteúdo.";
+    if (fast && lowScore) return "Respondeu rápido mas com baixa precisão. Possível chute.";
+    if (fast) return "Respondeu abaixo da média de tempo, com desempenho razoável.";
+    if (slow && highScore) return "Demorou mais que a média, mas com boa precisão. Reflete bem antes de responder.";
+    if (slow && lowScore) return "Demorou e teve baixo desempenho. Pode estar com dificuldade no conteúdo.";
+    if (lowScore) return "Baixo desempenho. Vale reforçar o conteúdo com este aluno.";
+    return "";
+  }
+
   const pendingStudents = classroom?.students?.filter(
     (st: any) => !students.find((s: any) => s.student.id === st.id)
   ) ?? [];
@@ -85,25 +120,33 @@ export default function ActivityResults() {
         )}
 
         {/* Summary cards */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-          <div className="card" style={{ flex: 1, textAlign: "center" }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+          <div className="card" style={{ flex: 1, textAlign: "center", minWidth: 80 }}>
             <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--primary)" }}>
               {summary.totalSubmissions}
             </div>
             <div className="text-small text-muted">Responderam</div>
           </div>
-          <div className="card" style={{ flex: 1, textAlign: "center" }}>
+          <div className="card" style={{ flex: 1, textAlign: "center", minWidth: 80 }}>
             <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--warning)" }}>
               {pendingCount > 0 ? pendingCount : 0}
             </div>
             <div className="text-small text-muted">Pendentes</div>
           </div>
-          <div className="card" style={{ flex: 1, textAlign: "center" }}>
+          <div className="card" style={{ flex: 1, textAlign: "center", minWidth: 80 }}>
             <div style={{ fontSize: "1.5rem", fontWeight: 700, color: getScoreColor(summary.averageScore) }}>
               {summary.averageScore}%
             </div>
             <div className="text-small text-muted">Média</div>
           </div>
+          {summary.avg_completion_time_seconds !== null && (
+            <div className="card" style={{ flex: 1, textAlign: "center", minWidth: 80 }}>
+              <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--primary)" }}>
+                {formatTime(summary.avg_completion_time_seconds)}
+              </div>
+              <div className="text-small text-muted">Tempo médio</div>
+            </div>
+          )}
         </div>
 
         {/* Per-question stats */}
@@ -153,6 +196,9 @@ export default function ActivityResults() {
                     {q.type === "open"
                       ? `${q.totalAnswered} responderam · ${q.totalAnswered - q.pendingCount} corrigidas`
                       : `${q.correctCount} de ${q.totalAnswered} acertaram`}
+                    {q.avg_time_seconds !== null && (
+                      <span style={{ marginLeft: 8 }}>· tempo médio: {formatTime(q.avg_time_seconds)}</span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -182,6 +228,16 @@ export default function ActivityResults() {
                     {s.pendingReview > 0 && (
                       <span style={{ color: "var(--warning)", marginLeft: 6 }}>
                         · {s.pendingReview} pendente{s.pendingReview > 1 ? "s" : ""}
+                      </span>
+                    )}
+                    {s.completion_time_seconds !== null && (
+                      <span style={{ marginLeft: 6 }}>
+                        · {getTimeLabel(s.completion_time_seconds, summary.avg_completion_time_seconds)}
+                      </span>
+                    )}
+                    {s.tab_switches > 0 && (
+                      <span style={{ color: s.tab_switches >= 3 ? "var(--danger)" : "var(--warning)", marginLeft: 6 }}>
+                        · {s.tab_switches}x fora da aba
                       </span>
                     )}
                   </div>
@@ -215,6 +271,56 @@ export default function ActivityResults() {
 
               {expandedStudent === s.id && (
                 <div className="card" style={{ marginTop: 4, padding: "10px 14px" }}>
+
+                  {/* Comportamento */}
+                  {(s.completion_time_seconds !== null || s.tab_switches > 0 || getBehaviorPattern(s)) && (
+                    <div
+                      style={{
+                        background: "#F8FAFC",
+                        border: "1px solid var(--border)",
+                        borderRadius: "var(--radius)",
+                        padding: "10px 12px",
+                        marginBottom: 12,
+                        fontSize: "0.82rem",
+                      }}
+                    >
+                      <div style={{ fontWeight: 600, marginBottom: 6, fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                        COMPORTAMENTO
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        {s.completion_time_seconds !== null && (
+                          <span>
+                            Tempo de conclusão:{" "}
+                            <strong>{getTimeLabel(s.completion_time_seconds, summary.avg_completion_time_seconds)}</strong>
+                          </span>
+                        )}
+                        {s.tab_switches === 0 && s.completion_time_seconds !== null && (
+                          <span style={{ color: "var(--success)" }}>Não saiu da aba durante a atividade</span>
+                        )}
+                        {s.tab_switches > 0 && (
+                          <span style={{ color: s.tab_switches >= 3 ? "var(--danger)" : "var(--warning)" }}>
+                            Saiu da aba {s.tab_switches} vez{s.tab_switches > 1 ? "es" : ""}
+                            {s.tab_switches >= 3 ? " — possível cola" : " — possível distração"}
+                          </span>
+                        )}
+                        {s.question_times && s.question_times.length > 0 && (() => {
+                          const slowest = [...s.question_times].sort((a: any, b: any) => b.time_seconds - a.time_seconds)[0];
+                          const qIndex = activity.questions.findIndex((q: any) => q.id === slowest.question_id);
+                          return qIndex >= 0 ? (
+                            <span>
+                              Maior tempo na questão {qIndex + 1}: <strong>{formatTime(slowest.time_seconds)}</strong>
+                            </span>
+                          ) : null;
+                        })()}
+                        {getBehaviorPattern(s) && (
+                          <span style={{ marginTop: 2, fontStyle: "italic", color: "#555" }}>
+                            {getBehaviorPattern(s)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {s.answers.map((a: any, i: number) => (
                     <div
                       key={a.id ?? a.question_id}

@@ -7,7 +7,7 @@ export default function StudentDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activities, setActivities] = useState<any[]>([]);
+  const [classrooms, setClassrooms] = useState<{ id: string; name: string; activities: any[] }[]>([]);
   const [submissions, setSubmissions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [showJoin, setShowJoin] = useState(false);
@@ -28,21 +28,23 @@ export default function StudentDashboard() {
     try {
       const { data: rooms } = await api.get("/classrooms");
 
-      const allActivities: any[] = [];
+      const classroomList: { id: string; name: string; activities: any[] }[] = [];
       const submittedSet = new Set<string>();
 
       for (const room of rooms) {
         const { data: acts } = await api.get(`/activities/classroom/${room.id}`);
         for (const act of acts) {
-          allActivities.push({ ...act, classroomName: room.name });
           try {
             await api.get(`/submissions/my/${act.id}`);
             submittedSet.add(act.id);
           } catch {}
         }
+        if (acts.length > 0) {
+          classroomList.push({ id: room.id, name: room.name, activities: acts });
+        }
       }
 
-      setActivities(allActivities);
+      setClassrooms(classroomList);
       setSubmissions(submittedSet);
     } catch {}
     setLoading(false);
@@ -122,33 +124,40 @@ export default function StudentDashboard() {
 
         {loading ? (
           <div className="loading">Carregando...</div>
-        ) : activities.length === 0 ? (
+        ) : classrooms.length === 0 ? (
           <div className="empty-state">
             <h3>Nenhuma atividade disponível</h3>
             <p>Aguarde o professor publicar uma atividade</p>
           </div>
         ) : (
-          activities.map((a) => {
-            const done = submissions.has(a.id);
-            return (
-              <div
-                key={a.id}
-                className="card"
-                style={{ cursor: "pointer" }}
-                onClick={() => navigate(done ? `/student/activity/${a.id}/result` : `/student/activity/${a.id}`)}
-              >
-                <div className="flex-between">
-                  <div>
-                    <h3>{a.title}</h3>
-                    <p>{a.classroomName} - {a.questionCount} questões</p>
+          classrooms.map((room) => (
+            <div key={room.id} style={{ marginBottom: 24 }}>
+              <h2 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: 12, color: "var(--text-muted, #555)" }}>
+                {room.name}
+              </h2>
+              {room.activities.map((a) => {
+                const done = submissions.has(a.id);
+                return (
+                  <div
+                    key={a.id}
+                    className="card"
+                    style={{ cursor: "pointer", marginBottom: 8 }}
+                    onClick={() => navigate(done ? `/student/activity/${a.id}/result` : `/student/activity/${a.id}`)}
+                  >
+                    <div className="flex-between">
+                      <div>
+                        <h3>{a.title}</h3>
+                        <p>{a.questionCount} questões</p>
+                      </div>
+                      <span className={`badge ${done ? "badge-success" : "badge-info"}`}>
+                        {done ? "Feita" : "Pendente"}
+                      </span>
+                    </div>
                   </div>
-                  <span className={`badge ${done ? "badge-success" : "badge-info"}`}>
-                    {done ? "Feita" : "Pendente"}
-                  </span>
-                </div>
-              </div>
-            );
-          })
+                );
+              })}
+            </div>
+          ))
         )}
       </div>
     </>
