@@ -8,6 +8,9 @@ export default function ClassroomView() {
   const [classroom, setClassroom] = useState<any>(null);
   const [activities, setActivities] = useState<any[]>([]);
   const [tab, setTab] = useState<"activities" | "students">("activities");
+  const [generatingInvite, setGeneratingInvite] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -24,6 +27,24 @@ export default function ClassroomView() {
     } catch {}
   }
 
+  async function handleGenerateInvite() {
+    setGeneratingInvite(true);
+    setInviteLink(null);
+    try {
+      const { data } = await api.post("/invites", { classroomId: id });
+      const link = `${window.location.origin}/invite/${data.token}`;
+      setInviteLink(link);
+    } catch {} finally {
+      setGeneratingInvite(false);
+    }
+  }
+
+  async function copyToClipboard(text: string, key: string) {
+    await navigator.clipboard.writeText(text);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 2000);
+  }
+
   if (!classroom) return <div className="loading">Carregando...</div>;
 
   return (
@@ -38,7 +59,7 @@ export default function ClassroomView() {
         <div className="code-display">
           <p>Código da turma</p>
           <div className="code">{classroom.code}</div>
-          <p>Compartilhe com seus alunos</p>
+          <p style={{ fontSize: "0.85rem" }}>Somente alunos já cadastrados podem usar este código</p>
         </div>
 
         <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
@@ -102,15 +123,53 @@ export default function ClassroomView() {
 
         {tab === "students" && (
           <>
+            <button
+              className="btn btn-primary mb-16"
+              onClick={handleGenerateInvite}
+              disabled={generatingInvite}
+            >
+              {generatingInvite ? "Gerando..." : "+ Gerar Convite"}
+            </button>
+
+            {inviteLink && (
+              <div className="card" style={{ marginBottom: 16, background: "#f0f9ff" }}>
+                <p style={{ fontWeight: 600, marginBottom: 8 }}>Convite gerado!</p>
+                <p style={{ fontSize: "0.85rem", wordBreak: "break-all", marginBottom: 8 }}>{inviteLink}</p>
+                <button
+                  className="btn btn-secondary btn-small"
+                  onClick={() => copyToClipboard(inviteLink, "invite")}
+                >
+                  {copied === "invite" ? "Copiado!" : "Copiar link"}
+                </button>
+                <p style={{ fontSize: "0.8rem", color: "#666", marginTop: 8 }}>
+                  Este link funciona para apenas um aluno.
+                </p>
+              </div>
+            )}
+
             {(!classroom.students || classroom.students.length === 0) ? (
               <div className="empty-state">
                 <h3>Nenhum aluno ainda</h3>
-                <p>Compartilhe o código <strong>{classroom.code}</strong> com seus alunos</p>
+                <p>Gere um convite para adicionar alunos à turma</p>
               </div>
             ) : (
               classroom.students.map((s: any) => (
-                <div key={s.id} className="student-row">
-                  <span style={{ fontWeight: 500 }}>{s.name}</span>
+                <div key={s.id} className="card" style={{ marginBottom: 8 }}>
+                  <div className="flex-between">
+                    <span style={{ fontWeight: 500 }}>{s.name}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <code style={{ background: "#f3f4f6", padding: "4px 8px", borderRadius: 4, fontSize: "0.85rem", letterSpacing: "0.1em" }}>
+                        {s.access_key}
+                      </code>
+                      <button
+                        className="btn btn-secondary btn-small"
+                        style={{ padding: "4px 8px", fontSize: "0.75rem" }}
+                        onClick={() => copyToClipboard(s.access_key, s.id)}
+                      >
+                        {copied === s.id ? "Copiado!" : "Copiar"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))
             )}

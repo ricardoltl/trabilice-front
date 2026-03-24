@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import StudentJoin from "./pages/student/StudentJoin";
+import AcceptInvite from "./pages/student/AcceptInvite";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import ClassroomView from "./pages/teacher/ClassroomView";
 import CreateActivity from "./pages/teacher/CreateActivity";
@@ -30,6 +31,7 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/join" element={<StudentJoin />} />
+      <Route path="/invite/:token" element={<AcceptInvite />} />
 
       <Route path="/teacher" element={<ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>} />
       <Route path="/teacher/classroom/:id" element={<ProtectedRoute role="teacher"><ClassroomView /></ProtectedRoute>} />

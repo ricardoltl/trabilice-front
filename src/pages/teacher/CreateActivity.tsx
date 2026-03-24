@@ -7,6 +7,8 @@ export default function CreateActivity() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
+  const [questionCount, setQuestionCount] = useState(5);
+  const [questionType, setQuestionType] = useState<"multiple_choice" | "open" | "mixed">("multiple_choice");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -17,17 +19,16 @@ export default function CreateActivity() {
     setLoading(true);
 
     try {
-      // Create activity
       const { data: activity } = await api.post("/activities", {
         classroom_id: classroomId,
         title,
         description: prompt,
       });
 
-      // Generate questions
       await api.post(`/activities/${activity.id}/generate-questions`, {
         prompt: prompt || title,
-        questionCount: 5,
+        questionCount,
+        questionType,
       });
 
       navigate(`/teacher/activity/${activity.id}/edit`);
@@ -37,6 +38,12 @@ export default function CreateActivity() {
       setLoading(false);
     }
   }
+
+  const typeLabel: Record<string, string> = {
+    multiple_choice: "Múltipla escolha",
+    open: "Abertas (dissertativas)",
+    mixed: "Misto (metade cada)",
+  };
 
   return (
     <>
@@ -60,15 +67,56 @@ export default function CreateActivity() {
               autoFocus
             />
           </div>
+
           <div className="input-group">
-            <label>Descreva o que deseja (opcional)</label>
+            <label>Descreva o conteúdo (opcional)</label>
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Ex: 5 questões de múltipla escolha sobre frações para 6º ano"
+              placeholder="Ex: Trigonometria básica para o 7º ano"
               rows={3}
             />
           </div>
+
+          <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+            <div className="input-group" style={{ flex: 1, marginBottom: 0 }}>
+              <label>Quantidade de questões</label>
+              <input
+                type="number"
+                min={1}
+                max={20}
+                value={questionCount}
+                onChange={(e) => setQuestionCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+              />
+            </div>
+
+            <div className="input-group" style={{ flex: 2, marginBottom: 0 }}>
+              <label>Tipo de questão</label>
+              <select
+                value={questionType}
+                onChange={(e) => setQuestionType(e.target.value as any)}
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "1.5px solid var(--border)",
+                  borderRadius: "var(--radius)",
+                  fontSize: "0.9rem",
+                  background: "white",
+                }}
+              >
+                {Object.entries(typeLabel).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {questionType === "mixed" && (
+            <p className="text-small text-muted" style={{ marginBottom: 16 }}>
+              Serão geradas {Math.ceil(questionCount / 2)} de múltipla escolha e {Math.floor(questionCount / 2)} abertas.
+            </p>
+          )}
+
           <button className="btn btn-primary" type="submit" disabled={loading}>
             {loading ? "Gerando questões..." : "Gerar Atividade"}
           </button>
