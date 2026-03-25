@@ -350,6 +350,17 @@ body {
   box-shadow: none;
 }
 
+.btn-cta {
+  background: linear-gradient(135deg, var(--primary), #9333EA, #A855F7, var(--primary));
+  background-size: 300% 300%;
+  animation: gradientShift 3s ease infinite, ctaGlow 2s ease-in-out infinite;
+}
+
+@keyframes ctaGlow {
+  0%, 100% { box-shadow: 0 4px 16px rgba(124,58,237,0.4); }
+  50%       { box-shadow: 0 6px 28px rgba(124,58,237,0.75), 0 0 0 4px rgba(124,58,237,0.15); }
+}
+
 .btn-secondary {
   background: white;
   color: var(--primary);
