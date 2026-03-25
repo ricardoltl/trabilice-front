@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTutorialAutoStart } from "../../components/AliceTutorial";
 import api from "../../services/api";
-import aliceHelper from "../../assets/aliceHelper.png";
-import aliceClass from "../../assets/aliceClass.png";
+import aliceHelper from "../../assets/aliceHelper.webp";
+import aliceClass from "../../assets/aliceClass.webp";
 
 const CLASSROOM_EMOJIS = ["📚", "🎯", "🌟", "🔬", "🎨", "🧩", "🚀", "🦋"];
 

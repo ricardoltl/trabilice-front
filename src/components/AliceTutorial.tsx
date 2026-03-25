@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useMatch } from "react-router-dom";
 import { useTutorial, TUTORIAL_STEPS } from "../contexts/TutorialContext";
-import aliceHelperImg from "../assets/aliceHelper.png";
+import aliceHelperImg from "../assets/aliceHelper.webp";
 
 // Mapeamento de rota → chave de tutorial
 function useCurrentTutorialKey(): string | null {
