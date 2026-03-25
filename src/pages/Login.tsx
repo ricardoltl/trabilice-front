@@ -28,20 +28,57 @@ export default function Login() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: "10vh" }}>
-      <button className="back-btn" onClick={() => navigate("/")}>Voltar</button>
-      <h1 style={{ margin: "24px 0" }}>Entrar</h1>
+    <div className="container" style={{ paddingTop: "8vh", maxWidth: 420 }}>
+      <button className="back-btn" onClick={() => navigate("/")}>← Voltar</button>
+
+      <div style={{ textAlign: "center", margin: "24px 0 28px" }}>
+        <img
+          src="/android-chrome-192x192.png"
+          alt="Alice"
+          style={{
+            width: 72,
+            height: 72,
+            marginBottom: 12,
+            filter: "drop-shadow(0 6px 16px rgba(124,58,237,0.3))",
+          }}
+        />
+        <h1 style={{
+          fontSize: "1.8rem",
+          fontWeight: 900,
+          letterSpacing: "-0.04em",
+          background: "linear-gradient(135deg, var(--primary), #A855F7)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+          padding: "2px 4px",
+        }}>
+          Trabilice
+        </h1>
+        <p className="text-muted text-small">Bem-vindo de volta, professor</p>
+      </div>
 
       {error && <div className="error-msg">{error}</div>}
 
       <form onSubmit={handleSubmit}>
         <div className="input-group">
           <label>Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="professor@email.com" required />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="professor@email.com"
+            required
+          />
         </div>
         <div className="input-group">
           <label>Senha</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Sua senha" required />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Sua senha"
+            required
+          />
         </div>
         <button className="btn btn-primary" type="submit" disabled={loading}>
           {loading ? "Entrando..." : "Entrar"}

@@ -94,8 +94,8 @@ export default function ActivityResults() {
 
   return (
     <>
-      <div className="nav-bar">
-        <button className="back-btn" onClick={() => navigate(-1)}>Voltar</button>
+      <div className="nav-bar nav-bar-centered">
+        <button className="back-btn" onClick={() => navigate(-1)}>← Voltar</button>
         <h2>Resultados</h2>
         <span></span>
       </div>
@@ -120,28 +120,28 @@ export default function ActivityResults() {
         )}
 
         {/* Summary cards */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-          <div className="card" style={{ flex: 1, textAlign: "center", minWidth: 80 }}>
-            <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--primary)" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
+          <div className="card" style={{ textAlign: "center", margin: 0 }}>
+            <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--primary)" }}>
               {summary.totalSubmissions}
             </div>
             <div className="text-small text-muted">Responderam</div>
           </div>
-          <div className="card" style={{ flex: 1, textAlign: "center", minWidth: 80 }}>
-            <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--warning)" }}>
+          <div className="card" style={{ textAlign: "center", margin: 0 }}>
+            <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--warning)" }}>
               {pendingCount > 0 ? pendingCount : 0}
             </div>
             <div className="text-small text-muted">Pendentes</div>
           </div>
-          <div className="card" style={{ flex: 1, textAlign: "center", minWidth: 80 }}>
-            <div style={{ fontSize: "1.5rem", fontWeight: 700, color: getScoreColor(summary.averageScore) }}>
+          <div className="card" style={{ textAlign: "center", margin: 0 }}>
+            <div style={{ fontSize: "1.6rem", fontWeight: 800, color: getScoreColor(summary.averageScore) }}>
               {summary.averageScore}%
             </div>
-            <div className="text-small text-muted">Média</div>
+            <div className="text-small text-muted">Média da turma</div>
           </div>
           {summary.avg_completion_time_seconds !== null && (
-            <div className="card" style={{ flex: 1, textAlign: "center", minWidth: 80 }}>
-              <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--primary)" }}>
+            <div className="card" style={{ textAlign: "center", margin: 0 }}>
+              <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--primary)" }}>
                 {formatTime(summary.avg_completion_time_seconds)}
               </div>
               <div className="text-small text-muted">Tempo médio</div>
@@ -209,239 +209,190 @@ export default function ActivityResults() {
         {/* Per-student results */}
         <h3 style={{ marginBottom: 12 }}>Alunos</h3>
 
-        {students.length === 0 ? (
-          <div className="empty-state">
-            <p>Nenhum aluno respondeu ainda</p>
-          </div>
-        ) : (
-          students.map((s: any) => (
-            <div key={s.id} style={{ marginBottom: 8 }}>
-              <div
-                className="student-row"
-                style={{ cursor: "pointer" }}
-                onClick={() => setExpandedStudent(expandedStudent === s.id ? null : s.id)}
-              >
-                <div>
-                  <div style={{ fontWeight: 500 }}>{s.student.name}</div>
-                  <div className="text-small text-muted">
-                    {s.correctAnswers}/{s.totalQuestions - s.pendingReview} acertos
-                    {s.pendingReview > 0 && (
-                      <span style={{ color: "var(--warning)", marginLeft: 6 }}>
-                        · {s.pendingReview} pendente{s.pendingReview > 1 ? "s" : ""}
-                      </span>
-                    )}
-                    {s.completion_time_seconds !== null && (
-                      <span style={{ marginLeft: 6 }}>
-                        · {getTimeLabel(s.completion_time_seconds, summary.avg_completion_time_seconds)}
-                      </span>
-                    )}
-                    {s.tab_switches > 0 && (
-                      <span style={{ color: s.tab_switches >= 3 ? "var(--danger)" : "var(--warning)", marginLeft: 6 }}>
-                        · {s.tab_switches}x fora da aba
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  {s.pendingReview > 0 ? (
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        background: "#FEF9C3",
-                        border: "1px solid #FDE047",
-                        borderRadius: 4,
-                        padding: "2px 6px",
-                      }}
-                    >
-                      Corrigir
-                    </span>
-                  ) : (
-                    <div
-                      className="score-circle"
-                      style={{ background: getScoreColor(s.score) }}
-                    >
-                      {s.score}%
-                    </div>
-                  )}
-                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                    {expandedStudent === s.id ? "▲" : "▼"}
-                  </span>
-                </div>
-              </div>
-
-              {expandedStudent === s.id && (
-                <div className="card" style={{ marginTop: 4, padding: "10px 14px" }}>
-
-                  {/* Comportamento */}
-                  {(s.completion_time_seconds !== null || s.tab_switches > 0 || getBehaviorPattern(s)) && (
-                    <div
-                      style={{
-                        background: "#F8FAFC",
-                        border: "1px solid var(--border)",
-                        borderRadius: "var(--radius)",
-                        padding: "10px 12px",
-                        marginBottom: 12,
-                        fontSize: "0.82rem",
-                      }}
-                    >
-                      <div style={{ fontWeight: 600, marginBottom: 6, fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                        COMPORTAMENTO
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        {s.completion_time_seconds !== null && (
-                          <span>
-                            Tempo de conclusão:{" "}
-                            <strong>{getTimeLabel(s.completion_time_seconds, summary.avg_completion_time_seconds)}</strong>
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          {students.length === 0 && pendingStudents.length === 0 ? (
+            <div className="empty-state" style={{ padding: "32px 20px" }}>
+              <p>Nenhum aluno respondeu ainda</p>
+            </div>
+          ) : (
+            <>
+              {students.map((s: any, si: number) => (
+                <div key={s.id}>
+                  <div
+                    className="student-row"
+                    style={{
+                      cursor: "pointer",
+                      padding: "14px 16px",
+                      borderBottom: expandedStudent === s.id ? "none" : "1px solid var(--border)",
+                      borderTop: si > 0 ? "none" : undefined,
+                    }}
+                    onClick={() => setExpandedStudent(expandedStudent === s.id ? null : s.id)}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{s.student.name}</div>
+                      <div className="text-small text-muted">
+                        {s.correctAnswers}/{s.totalQuestions - s.pendingReview} acertos
+                        {s.pendingReview > 0 && (
+                          <span style={{ color: "var(--warning)", marginLeft: 6 }}>
+                            · {s.pendingReview} pendente{s.pendingReview > 1 ? "s" : ""}
                           </span>
                         )}
-                        {s.tab_switches === 0 && s.completion_time_seconds !== null && (
-                          <span style={{ color: "var(--success)" }}>Não saiu da aba durante a atividade</span>
+                        {s.completion_time_seconds !== null && (
+                          <span style={{ marginLeft: 6 }}>
+                            · {getTimeLabel(s.completion_time_seconds, summary.avg_completion_time_seconds)}
+                          </span>
                         )}
                         {s.tab_switches > 0 && (
-                          <span style={{ color: s.tab_switches >= 3 ? "var(--danger)" : "var(--warning)" }}>
-                            Saiu da aba {s.tab_switches} vez{s.tab_switches > 1 ? "es" : ""}
-                            {s.tab_switches >= 3 ? " — possível cola" : " — possível distração"}
-                          </span>
-                        )}
-                        {s.question_times && s.question_times.length > 0 && (() => {
-                          const slowest = [...s.question_times].sort((a: any, b: any) => b.time_seconds - a.time_seconds)[0];
-                          const qIndex = activity.questions.findIndex((q: any) => q.id === slowest.question_id);
-                          return qIndex >= 0 ? (
-                            <span>
-                              Maior tempo na questão {qIndex + 1}: <strong>{formatTime(slowest.time_seconds)}</strong>
-                            </span>
-                          ) : null;
-                        })()}
-                        {getBehaviorPattern(s) && (
-                          <span style={{ marginTop: 2, fontStyle: "italic", color: "#555" }}>
-                            {getBehaviorPattern(s)}
+                          <span style={{ color: s.tab_switches >= 3 ? "var(--danger)" : "var(--warning)", marginLeft: 6 }}>
+                            · {s.tab_switches}x fora da aba
                           </span>
                         )}
                       </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      {s.pendingReview > 0 ? (
+                        <span className="badge badge-warning">Corrigir</span>
+                      ) : (
+                        <div className="score-circle" style={{ background: getScoreColor(s.score) }}>
+                          {s.score}%
+                        </div>
+                      )}
+                      <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+                        {expandedStudent === s.id ? "▲" : "▼"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {expandedStudent === s.id && (
+                    <div style={{ padding: "0 16px 16px", borderBottom: "1px solid var(--border)", background: "#FAFAFA" }}>
+
+                      {/* Comportamento */}
+                      {(s.completion_time_seconds !== null || s.tab_switches > 0 || getBehaviorPattern(s)) && (
+                        <div style={{
+                          background: "var(--primary-light)",
+                          border: "1px solid var(--primary-mid)",
+                          borderRadius: "var(--radius-sm)",
+                          padding: "10px 12px",
+                          marginBottom: 12,
+                          marginTop: 12,
+                          fontSize: "0.82rem",
+                        }}>
+                          <div style={{ fontWeight: 700, marginBottom: 6, fontSize: "0.75rem", color: "var(--primary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                            Comportamento
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                            {s.completion_time_seconds !== null && (
+                              <span>Tempo: <strong>{getTimeLabel(s.completion_time_seconds, summary.avg_completion_time_seconds)}</strong></span>
+                            )}
+                            {s.tab_switches === 0 && s.completion_time_seconds !== null && (
+                              <span style={{ color: "var(--success)" }}>✓ Não saiu da aba</span>
+                            )}
+                            {s.tab_switches > 0 && (
+                              <span style={{ color: s.tab_switches >= 3 ? "var(--danger)" : "var(--warning)" }}>
+                                Saiu da aba {s.tab_switches} vez{s.tab_switches > 1 ? "es" : ""}
+                                {s.tab_switches >= 3 ? " — possível cola" : " — possível distração"}
+                              </span>
+                            )}
+                            {getBehaviorPattern(s) && (
+                              <span style={{ fontStyle: "italic", color: "#555" }}>{getBehaviorPattern(s)}</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {s.answers.map((a: any, i: number) => (
+                        <div key={a.id ?? a.question_id} style={{
+                          padding: "10px 0",
+                          borderBottom: i < s.answers.length - 1 ? "1px solid var(--border)" : "none",
+                        }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+                            <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                              Q{i + 1} · {a.type === "open" ? "Aberta" : "Múltipla escolha"}
+                            </span>
+                            {a.type !== "open" && (
+                              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: a.is_correct ? "var(--success)" : "var(--danger)" }}>
+                                {a.is_correct ? "✓ Certo" : "✗ Errado"}
+                              </span>
+                            )}
+                            {a.type === "open" && a.is_correct === null && (
+                              <span style={{ fontSize: "0.75rem", color: "var(--warning)", fontWeight: 600 }}>Aguardando correção</span>
+                            )}
+                            {a.type === "open" && a.is_correct !== null && (
+                              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: a.is_correct ? "var(--success)" : "var(--danger)" }}>
+                                {a.is_correct ? "✓ Correto" : "✗ Incorreto"}
+                              </span>
+                            )}
+                          </div>
+
+                          <div style={{ fontSize: "0.85rem", marginBottom: 4 }}>{a.question}</div>
+                          <div className="text-small text-muted" style={{ marginBottom: a.type === "open" ? 8 : 0 }}>
+                            Resposta: <strong>{a.your_answer || "—"}</strong>
+                          </div>
+
+                          {a.type !== "open" && !a.is_correct && (
+                            <div className="text-small" style={{ color: "var(--success)" }}>
+                              Correta: <strong>{a.correct_answer}</strong>
+                            </div>
+                          )}
+
+                          {a.type === "open" && a.correct_answer && (
+                            <div style={{
+                              background: "var(--primary-light)",
+                              border: "1px solid var(--primary-mid)",
+                              borderRadius: "var(--radius-sm)",
+                              padding: "8px 10px",
+                              marginBottom: 8,
+                              fontSize: "0.8rem",
+                            }}>
+                              <div style={{ color: "var(--primary)", fontWeight: 600, marginBottom: 2 }}>Resposta esperada (IA)</div>
+                              <div style={{ color: "var(--text)" }}>{a.correct_answer}</div>
+                            </div>
+                          )}
+
+                          {a.type === "open" && (
+                            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                              <button
+                                disabled={grading === a.id}
+                                onClick={() => handleGrade(a.id, true)}
+                                style={{
+                                  flex: 1, padding: "8px",
+                                  border: `2px solid ${a.is_correct === true ? "var(--success)" : "var(--border)"}`,
+                                  borderRadius: "var(--radius-sm)",
+                                  background: a.is_correct === true ? "#DCFCE7" : "white",
+                                  cursor: "pointer", fontSize: "0.85rem",
+                                  fontWeight: a.is_correct === true ? 700 : 400,
+                                }}
+                              >✓ Correto</button>
+                              <button
+                                disabled={grading === a.id}
+                                onClick={() => handleGrade(a.id, false)}
+                                style={{
+                                  flex: 1, padding: "8px",
+                                  border: `2px solid ${a.is_correct === false ? "var(--danger)" : "var(--border)"}`,
+                                  borderRadius: "var(--radius-sm)",
+                                  background: a.is_correct === false ? "#FEE2E2" : "white",
+                                  cursor: "pointer", fontSize: "0.85rem",
+                                  fontWeight: a.is_correct === false ? 700 : 400,
+                                }}
+                              >✗ Incorreto</button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
-
-                  {s.answers.map((a: any, i: number) => (
-                    <div
-                      key={a.id ?? a.question_id}
-                      style={{
-                        padding: "10px 0",
-                        borderBottom: i < s.answers.length - 1 ? "1px solid var(--border)" : "none",
-                      }}
-                    >
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
-                        <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                          Q{i + 1} · {a.type === "open" ? "Aberta" : "Múltipla escolha"}
-                        </span>
-                        {a.type !== "open" && (
-                          <span
-                            style={{
-                              fontSize: "0.75rem",
-                              fontWeight: 600,
-                              color: a.is_correct ? "var(--success)" : "var(--danger)",
-                            }}
-                          >
-                            {a.is_correct ? "✓ Certo" : "✗ Errado"}
-                          </span>
-                        )}
-                        {a.type === "open" && a.is_correct === null && (
-                          <span style={{ fontSize: "0.75rem", color: "var(--warning)", fontWeight: 600 }}>
-                            Aguardando correção
-                          </span>
-                        )}
-                        {a.type === "open" && a.is_correct !== null && (
-                          <span
-                            style={{
-                              fontSize: "0.75rem",
-                              fontWeight: 600,
-                              color: a.is_correct ? "var(--success)" : "var(--danger)",
-                            }}
-                          >
-                            {a.is_correct ? "✓ Correto" : "✗ Incorreto"}
-                          </span>
-                        )}
-                      </div>
-
-                      <div style={{ fontSize: "0.85rem", marginBottom: 4 }}>{a.question}</div>
-                      <div className="text-small text-muted" style={{ marginBottom: a.type === "open" ? 8 : 0 }}>
-                        Resposta: <strong>{a.your_answer || "—"}</strong>
-                      </div>
-
-                      {a.type !== "open" && !a.is_correct && (
-                        <div className="text-small" style={{ color: "var(--success)" }}>
-                          Correta: <strong>{a.correct_answer}</strong>
-                        </div>
-                      )}
-
-                      {a.type === "open" && a.correct_answer && (
-                        <div
-                          style={{
-                            background: "#F0F9FF",
-                            border: "1px solid #BAE6FD",
-                            borderRadius: "var(--radius)",
-                            padding: "8px 10px",
-                            marginBottom: 8,
-                            fontSize: "0.8rem",
-                          }}
-                        >
-                          <div style={{ color: "#0369A1", fontWeight: 600, marginBottom: 2 }}>
-                            Resposta esperada (gerada pela IA)
-                          </div>
-                          <div style={{ color: "#0C4A6E" }}>{a.correct_answer}</div>
-                        </div>
-                      )}
-
-                      {a.type === "open" && (
-                        <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-                          <button
-                            disabled={grading === a.id}
-                            onClick={() => handleGrade(a.id, true)}
-                            style={{
-                              flex: 1,
-                              padding: "8px",
-                              border: `2px solid ${a.is_correct === true ? "var(--success)" : "var(--border)"}`,
-                              borderRadius: "var(--radius)",
-                              background: a.is_correct === true ? "#DCFCE7" : "white",
-                              cursor: "pointer",
-                              fontSize: "0.85rem",
-                              fontWeight: a.is_correct === true ? 700 : 400,
-                            }}
-                          >
-                            ✓ Correto
-                          </button>
-                          <button
-                            disabled={grading === a.id}
-                            onClick={() => handleGrade(a.id, false)}
-                            style={{
-                              flex: 1,
-                              padding: "8px",
-                              border: `2px solid ${a.is_correct === false ? "var(--danger)" : "var(--border)"}`,
-                              borderRadius: "var(--radius)",
-                              background: a.is_correct === false ? "#FEE2E2" : "white",
-                              cursor: "pointer",
-                              fontSize: "0.85rem",
-                              fontWeight: a.is_correct === false ? 700 : 400,
-                            }}
-                          >
-                            ✗ Incorreto
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
                 </div>
-              )}
-            </div>
-          ))
-        )}
+              ))}
 
-        {/* Pending students */}
-        {pendingStudents.map((st: any) => (
-          <div key={st.id} className="student-row">
-            <div style={{ fontWeight: 500 }}>{st.name}</div>
-            <span className="badge badge-warning">Pendente</span>
-          </div>
-        ))}
+              {pendingStudents.map((st: any) => (
+                <div key={st.id} className="student-row" style={{ padding: "14px 16px", borderTop: "1px solid var(--border)" }}>
+                  <div style={{ fontWeight: 600 }}>{st.name}</div>
+                  <span className="badge badge-warning">Pendente</span>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
       </div>
     </>
   );

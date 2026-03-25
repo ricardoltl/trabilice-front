@@ -72,9 +72,12 @@ export default function StudentDashboard() {
   return (
     <>
       <div className="nav-bar">
-        <h2>ClassHelper</h2>
-        <div>
-          <span className="text-small text-muted" style={{ marginRight: 12 }}>{user?.name}</span>
+        <div className="nav-logo">
+          <img src="/android-chrome-192x192.png" alt="Alice" />
+          <h2>Trabilice</h2>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span className="text-small text-muted">{user?.name}</span>
           <button className="logout-btn" onClick={() => { logout(); navigate("/"); }}>Sair</button>
         </div>
       </div>
@@ -130,18 +133,31 @@ export default function StudentDashboard() {
             <p>Aguarde o professor publicar uma atividade</p>
           </div>
         ) : (
-          classrooms.map((room) => (
-            <div key={room.id} style={{ marginBottom: 24 }}>
-              <h2 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: 12, color: "var(--text-muted, #555)" }}>
-                {room.name}
-              </h2>
-              {room.activities.map((a) => {
+          classrooms.map((room, ri) => (
+            <div key={room.id} style={{ marginBottom: 28, animation: `slideUp 0.3s ease both ${ri * 0.08}s` }}>
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 10,
+                paddingBottom: 8,
+                borderBottom: "2px solid var(--primary-light)",
+              }}>
+                <div style={{
+                  width: 8, height: 8, borderRadius: "50%",
+                  background: "var(--primary)", flexShrink: 0,
+                }} />
+                <h2 style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  {room.name}
+                </h2>
+              </div>
+              {room.activities.map((a, ai) => {
                 const done = submissions.has(a.id);
                 return (
                   <div
                     key={a.id}
                     className="card"
-                    style={{ cursor: "pointer", marginBottom: 8 }}
+                    style={{ cursor: "pointer", marginBottom: 8, animation: `slideUp 0.3s ease both ${(ri * 0.08) + (ai * 0.05) + 0.1}s` }}
                     onClick={() => navigate(done ? `/student/activity/${a.id}/result` : `/student/activity/${a.id}`)}
                   >
                     <div className="flex-between">

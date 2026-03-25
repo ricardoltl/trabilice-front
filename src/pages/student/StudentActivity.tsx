@@ -107,8 +107,8 @@ export default function StudentActivity() {
 
   return (
     <>
-      <div className="nav-bar">
-        <button className="back-btn" onClick={() => navigate("/student")}>Voltar</button>
+      <div className="nav-bar nav-bar-centered">
+        <button className="back-btn" onClick={() => navigate("/student")}>← Voltar</button>
         <h2>{answeredCount}/{totalQuestions}</h2>
         <span></span>
       </div>

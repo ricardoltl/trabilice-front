@@ -83,8 +83,8 @@ export default function EditActivity() {
 
   return (
     <>
-      <div className="nav-bar">
-        <button className="back-btn" onClick={() => navigate(-1)}>Voltar</button>
+      <div className="nav-bar nav-bar-centered">
+        <button className="back-btn" onClick={() => navigate(-1)}>← Voltar</button>
         <h2>Editar</h2>
         <button className="btn btn-small btn-primary" onClick={handleSave} disabled={saving}>
           {saving ? "Salvando..." : "Salvar"}

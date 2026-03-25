@@ -4,23 +4,31 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="container" style={{ paddingTop: "20vh", textAlign: "center" }}>
-      <h1 style={{ fontSize: "2rem", marginBottom: 8 }}>ClassHelper</h1>
-      <p className="text-muted" style={{ marginBottom: 32 }}>
+    <div className="home-page">
+      <img
+        src="/android-chrome-192x192.png"
+        alt="Alice"
+        className="home-mascot"
+      />
+
+      <h1 className="home-title">Trabilice</h1>
+      <p className="home-subtitle">
         Crie atividades, aplique para alunos e veja resultados em segundos.
       </p>
 
-      <button className="btn btn-primary" style={{ marginBottom: 12 }} onClick={() => navigate("/login")}>
-        Sou Professor
-      </button>
+      <div className="home-actions">
+        <button className="btn btn-primary" onClick={() => navigate("/login")}>
+          Sou Professor
+        </button>
 
-      <button className="btn btn-secondary" style={{ marginBottom: 32 }} onClick={() => navigate("/join")}>
-        Sou Aluno
-      </button>
+        <button className="btn btn-secondary" onClick={() => navigate("/join")}>
+          Sou Aluno
+        </button>
 
-      <p className="text-small text-muted">
-        Ainda não tem conta? <a href="/register">Cadastre-se como professor</a>
-      </p>
+        <p className="text-small text-muted" style={{ marginTop: 4 }}>
+          Ainda não tem conta? <a href="/register">Cadastre-se como professor</a>
+        </p>
+      </div>
     </div>
   );
 }

@@ -49,8 +49,8 @@ export default function ClassroomView() {
 
   return (
     <>
-      <div className="nav-bar">
-        <button className="back-btn" onClick={() => navigate("/teacher")}>Voltar</button>
+      <div className="nav-bar nav-bar-centered">
+        <button className="back-btn" onClick={() => navigate("/teacher")}>← Voltar</button>
         <h2>{classroom.name}</h2>
         <span></span>
       </div>
