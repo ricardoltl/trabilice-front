@@ -981,3 +981,242 @@ a {
   box-shadow: 0 4px 12px rgba(124,58,237,0.3);
   letter-spacing: -0.02em;
 }
+
+/* =====================================================
+   ALICE TUTORIAL
+   ===================================================== */
+
+/* Overlay semitransparente */
+.alice-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 10, 40, 0.45);
+  z-index: 8000;
+  animation: fadeIn 0.25s ease;
+}
+
+/* Elemento destacado pelo tutorial */
+.tutorial-highlight {
+  position: relative;
+  z-index: 8100 !important;
+  box-shadow: 0 0 0 4px var(--primary), 0 0 24px rgba(124,58,237,0.5) !important;
+  border-radius: var(--radius-sm) !important;
+  animation: tutorialPulse 1.8s ease-in-out infinite !important;
+}
+
+@keyframes tutorialPulse {
+  0%, 100% { box-shadow: 0 0 0 4px var(--primary), 0 0 16px rgba(124,58,237,0.4); }
+  50%       { box-shadow: 0 0 0 6px var(--primary), 0 0 32px rgba(124,58,237,0.65); }
+}
+
+/* Container principal do tutorial (fixo canto inferior direito) */
+.alice-tutorial-container {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 8200;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Balão de fala */
+.alice-bubble {
+  background: #fff;
+  border-radius: 20px 20px 4px 20px;
+  padding: 20px 20px 16px;
+  box-shadow: 0 8px 32px rgba(124,58,237,0.22), 0 2px 8px rgba(0,0,0,0.08);
+  max-width: 320px;
+  min-width: 260px;
+  border: 1.5px solid var(--primary-mid);
+  position: relative;
+  margin-right: 12px;
+  margin-bottom: 6px;
+}
+
+/* Ponteiro do balão (triângulo apontando para Alice) */
+.alice-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  right: 16px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 0px solid transparent;
+  border-top: 12px solid var(--primary-mid);
+}
+
+.alice-bubble::before {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  right: 17px;
+  width: 0;
+  height: 0;
+  border-left: 11px solid transparent;
+  border-right: 0px solid transparent;
+  border-top: 11px solid #fff;
+  z-index: 1;
+}
+
+.alice-bubble-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+
+.alice-bubble-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.3;
+}
+
+.alice-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding: 2px 6px;
+  border-radius: 50%;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.alice-close-btn:hover {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.alice-bubble-text {
+  font-size: 0.875rem;
+  color: var(--text);
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+
+.alice-bubble-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Bolinhas de progresso */
+.alice-step-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.alice-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.alice-dot-active {
+  background: var(--primary);
+  transform: scale(1.35);
+}
+
+/* Botões de navegação */
+.alice-nav-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.alice-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.alice-btn-primary {
+  background: var(--primary);
+  color: white;
+}
+.alice-btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(124,58,237,0.35);
+}
+
+.alice-btn-secondary {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+.alice-btn-secondary:hover {
+  background: var(--primary-mid);
+}
+
+/* Mascote Alice */
+.alice-mascot-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 0;
+}
+
+.alice-mascot-img {
+  width: 72px;
+  height: 72px;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px rgba(124,58,237,0.3));
+}
+
+/* Botão de ajuda flutuante (quando tutorial inativo) */
+.alice-help-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 7999;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+.alice-help-btn:hover {
+  transform: scale(1.1) translateY(-2px);
+}
+
+.alice-help-avatar {
+  width: 90px;
+  height: 90px;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(124,58,237,0.35));
+}
+
+.alice-help-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(124,58,237,0.4);
+  border: 2px solid white;
+}

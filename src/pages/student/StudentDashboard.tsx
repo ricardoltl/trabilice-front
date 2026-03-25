@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { useTutorialAutoStart } from "../../components/AliceTutorial";
 import api from "../../services/api";
 
 export default function StudentDashboard() {
+  useTutorialAutoStart("student-dashboard");
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -11,6 +13,7 @@ export default function StudentDashboard() {
   const [submissions, setSubmissions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [showJoin, setShowJoin] = useState(false);
+  const [collapsedRooms, setCollapsedRooms] = useState<Set<string>>(new Set());
   const [joinToken, setJoinToken] = useState("");
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinError, setJoinError] = useState("");
@@ -39,9 +42,7 @@ export default function StudentDashboard() {
             submittedSet.add(act.id);
           } catch {}
         }
-        if (acts.length > 0) {
-          classroomList.push({ id: room.id, name: room.name, activities: acts });
-        }
+        classroomList.push({ id: room.id, name: room.name, activities: acts });
       }
 
       setClassrooms(classroomList);
@@ -88,6 +89,7 @@ export default function StudentDashboard() {
           <button
             className="btn btn-small btn-secondary"
             onClick={() => { setShowJoin(!showJoin); setJoinError(""); setJoinSuccess(""); }}
+            data-tutorial-id="btn-entrar-turma"
           >
             + Entrar em turma
           </button>
@@ -125,33 +127,49 @@ export default function StudentDashboard() {
           </div>
         )}
 
+        <div data-tutorial-id="activity-list">
         {loading ? (
           <div className="loading">Carregando...</div>
         ) : classrooms.length === 0 ? (
           <div className="empty-state">
-            <h3>Nenhuma atividade disponível</h3>
-            <p>Aguarde o professor publicar uma atividade</p>
+            <h3>Você ainda não está em nenhuma turma</h3>
+            <p>Entre em uma turma com o código do professor</p>
           </div>
         ) : (
-          classrooms.map((room, ri) => (
-            <div key={room.id} style={{ marginBottom: 28, animation: `slideUp 0.3s ease both ${ri * 0.08}s` }}>
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                marginBottom: 10,
-                paddingBottom: 8,
-                borderBottom: "2px solid var(--primary-light)",
-              }}>
-                <div style={{
-                  width: 8, height: 8, borderRadius: "50%",
-                  background: "var(--primary)", flexShrink: 0,
-                }} />
-                <h2 style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          classrooms.map((room, ri) => {
+            const isCollapsed = collapsedRooms.has(room.id);
+            const pendingCount = room.activities.filter((a: any) => !submissions.has(a.id)).length;
+            return (
+            <div key={room.id} style={{ marginBottom: 20, animation: `slideUp 0.3s ease both ${ri * 0.08}s` }}>
+              <button
+                onClick={() => setCollapsedRooms((prev) => {
+                  const next = new Set(prev);
+                  next.has(room.id) ? next.delete(room.id) : next.add(room.id);
+                  return next;
+                })}
+                style={{
+                  width: "100%", background: "none", border: "none", cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 8,
+                  marginBottom: isCollapsed ? 0 : 10, paddingBottom: 8,
+                  borderBottom: "2px solid var(--primary-light)",
+                }}
+              >
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--primary)", flexShrink: 0 }} />
+                <h2 style={{ flex: 1, textAlign: "left", fontSize: "0.9rem", fontWeight: 700, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   {room.name}
                 </h2>
-              </div>
-              {room.activities.map((a, ai) => {
+                {pendingCount > 0 && (
+                  <span className="badge badge-info" style={{ fontSize: "0.75rem" }}>{pendingCount} pendente{pendingCount > 1 ? "s" : ""}</span>
+                )}
+                <span style={{ color: "var(--primary)", fontSize: "0.75rem", marginLeft: 4 }}>
+                  {isCollapsed ? "▶" : "▼"}
+                </span>
+              </button>
+              {!isCollapsed && (room.activities.length === 0 ? (
+                <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", padding: "10px 4px" }}>
+                  Nenhuma atividade publicada ainda. Aguarde o professor!
+                </p>
+              ) : room.activities.map((a, ai) => {
                 const done = submissions.has(a.id);
                 return (
                   <div
@@ -171,10 +189,12 @@ export default function StudentDashboard() {
                     </div>
                   </div>
                 );
-              })}
+              }))}
             </div>
-          ))
+          );
+          })
         )}
+        </div>
       </div>
     </>
   );

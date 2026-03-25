@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { useTutorialAutoStart } from "../../components/AliceTutorial";
 import api from "../../services/api";
 
 const CLASSROOM_EMOJIS = ["📚", "🎯", "🌟", "🔬", "🎨", "🧩", "🚀", "🦋"];
 
 export default function TeacherDashboard() {
+  useTutorialAutoStart("teacher-dashboard");
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [classrooms, setClassrooms] = useState<any[]>([]);
@@ -64,11 +66,12 @@ export default function TeacherDashboard() {
       <div className="container">
         <div className="page-header">
           <h1>Minhas Turmas</h1>
-          <button className="btn btn-primary btn-small" onClick={() => setShowCreate(true)}>
+          <button className="btn btn-primary btn-small" onClick={() => setShowCreate(true)} data-tutorial-id="btn-nova-turma">
             + Nova Turma
           </button>
         </div>
 
+        <div data-tutorial-id="classroom-list">
         {loading ? (
           <div className="loading">Carregando...</div>
         ) : classrooms.length === 0 ? (
@@ -102,6 +105,7 @@ export default function TeacherDashboard() {
             </div>
           ))
         )}
+        </div>
       </div>
 
       {/* Modal Nova Turma */}

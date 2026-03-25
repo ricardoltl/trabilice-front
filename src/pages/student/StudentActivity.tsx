@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTutorialAutoStart } from "../../components/AliceTutorial";
 import api from "../../services/api";
 
 export default function StudentActivity() {
+  useTutorialAutoStart("student-activity");
   const { id } = useParams();
   const navigate = useNavigate();
   const [activity, setActivity] = useState<any>(null);
@@ -130,7 +132,7 @@ export default function StudentActivity() {
           />
         </div>
 
-        <div className="question-card">
+        <div className="question-card" data-tutorial-id="question-card">
           <div className="question-number">Questão {currentIndex + 1} de {totalQuestions}</div>
           <h3>{question.statement}</h3>
 
@@ -161,7 +163,7 @@ export default function StudentActivity() {
           )}
         </div>
 
-        <div style={{ display: "flex", gap: 8, marginBottom: 32 }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 32 }} data-tutorial-id="question-nav">
           {currentIndex > 0 && (
             <button className="btn btn-secondary" onClick={handlePrev} style={{ flex: 1 }}>
               Anterior
@@ -178,6 +180,7 @@ export default function StudentActivity() {
               onClick={handleSubmit}
               disabled={submitting}
               style={{ flex: 1 }}
+              data-tutorial-id="btn-submit"
             >
               {submitting ? "Enviando..." : "Enviar Respostas"}
             </button>

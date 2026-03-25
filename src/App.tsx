@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { TutorialProvider } from "./contexts/TutorialContext";
+import AliceTutorial from "./components/AliceTutorial";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -50,7 +52,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <TutorialProvider>
+          <AppRoutes />
+          <AliceTutorial />
+        </TutorialProvider>
       </AuthProvider>
     </BrowserRouter>
   );

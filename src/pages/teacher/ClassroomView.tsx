@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTutorialAutoStart } from "../../components/AliceTutorial";
 import api from "../../services/api";
 
 export default function ClassroomView() {
+  useTutorialAutoStart("teacher-classroom");
   const { id } = useParams();
   const navigate = useNavigate();
   const [classroom, setClassroom] = useState<any>(null);
@@ -56,13 +58,13 @@ export default function ClassroomView() {
       </div>
 
       <div className="container">
-        <div className="code-display">
+        <div className="code-display" data-tutorial-id="classroom-code">
           <p>Código da turma</p>
           <div className="code">{classroom.code}</div>
           <p style={{ fontSize: "0.85rem" }}>Somente alunos já cadastrados podem usar este código</p>
         </div>
 
-        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }} data-tutorial-id="classroom-tabs">
           <button
             className={`btn btn-small ${tab === "activities" ? "btn-primary" : "btn-secondary"}`}
             onClick={() => setTab("activities")}
@@ -82,6 +84,7 @@ export default function ClassroomView() {
             <button
               className="btn btn-primary mb-16"
               onClick={() => navigate(`/teacher/classroom/${id}/new-activity`)}
+              data-tutorial-id="btn-criar-atividade"
             >
               + Criar Atividade
             </button>
