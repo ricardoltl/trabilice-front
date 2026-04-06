@@ -43,7 +43,13 @@ export default function ActivityResults() {
   if (!activity || !results) return <div className="loading">Carregando...</div>;
 
   const { summary, questionStats, students } = results;
-  const totalStudents = classroom?.students?.length || 0;
+
+  // Se a atividade tem assignments, considerar apenas os alunos atribuídos
+  const assignedTo: string[] | undefined = activity.assignedTo;
+  const relevantStudents = assignedTo
+    ? (classroom?.students || []).filter((s: any) => assignedTo.includes(s.id))
+    : (classroom?.students || []);
+  const totalStudents = relevantStudents.length;
   const pendingCount = totalStudents - summary.totalSubmissions;
   const totalPendingReview = students.reduce((sum: number, s: any) => sum + (s.pendingReview || 0), 0);
 
@@ -88,9 +94,9 @@ export default function ActivityResults() {
     return "";
   }
 
-  const pendingStudents = classroom?.students?.filter(
+  const pendingStudents = relevantStudents.filter(
     (st: any) => !students.find((s: any) => s.student.id === st.id)
-  ) ?? [];
+  );
 
   return (
     <>

@@ -10,6 +10,11 @@ interface Question {
   correct_answer: string;
 }
 
+interface Student {
+  id: string;
+  name: string;
+}
+
 export default function EditActivity() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -17,6 +22,13 @@ export default function EditActivity() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+
+  // Publish modal state
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [assignMode, setAssignMode] = useState<"all" | "select">("all");
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
+  const [loadingStudents, setLoadingStudents] = useState(false);
 
   useEffect(() => {
     loadActivity();
@@ -67,16 +79,39 @@ export default function EditActivity() {
     setSaving(false);
   }
 
+  async function openPublishModal() {
+    setShowPublishModal(true);
+    setLoadingStudents(true);
+    try {
+      const { data } = await api.get(`/classrooms/${activity.classroom_id}`);
+      setStudents(data.students || []);
+    } catch {}
+    setLoadingStudents(false);
+  }
+
+  function toggleStudent(studentId: string) {
+    setSelectedStudents((prev) => {
+      const next = new Set(prev);
+      next.has(studentId) ? next.delete(studentId) : next.add(studentId);
+      return next;
+    });
+  }
+
   async function handlePublish() {
     setPublishing(true);
     try {
       await api.put(`/activities/${id}/questions`, { questions });
-      await api.patch(`/activities/${id}/publish`);
+      const body: any = {};
+      if (assignMode === "select" && selectedStudents.size > 0) {
+        body.assigned_to = Array.from(selectedStudents);
+      }
+      await api.patch(`/activities/${id}/publish`, body);
       navigate(-1);
     } catch (err: any) {
       alert(err.response?.data?.error || "Erro ao publicar");
     }
     setPublishing(false);
+    setShowPublishModal(false);
   }
 
   if (!activity) return <div className="loading">Carregando...</div>;
@@ -152,9 +187,90 @@ export default function EditActivity() {
         </button>
 
         {!activity.published && (
-          <button className="btn btn-success" onClick={handlePublish} disabled={publishing}>
-            {publishing ? "Publicando..." : "Publicar Atividade"}
+          <button className="btn btn-success" onClick={openPublishModal} disabled={publishing}>
+            Publicar Atividade
           </button>
+        )}
+
+        {showPublishModal && (
+          <div className="modal-backdrop" onClick={() => !publishing && setShowPublishModal(false)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <h3 style={{ marginBottom: 16 }}>Publicar para quem?</h3>
+
+              <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                <button
+                  className={`btn btn-small ${assignMode === "all" ? "btn-primary" : "btn-secondary"}`}
+                  onClick={() => setAssignMode("all")}
+                >
+                  Turma toda
+                </button>
+                <button
+                  className={`btn btn-small ${assignMode === "select" ? "btn-primary" : "btn-secondary"}`}
+                  onClick={() => setAssignMode("select")}
+                >
+                  Selecionar alunos
+                </button>
+              </div>
+
+              {assignMode === "select" && (
+                <div style={{ maxHeight: 250, overflowY: "auto", marginBottom: 16 }}>
+                  {loadingStudents ? (
+                    <p className="text-muted text-small">Carregando alunos...</p>
+                  ) : students.length === 0 ? (
+                    <p className="text-muted text-small">Nenhum aluno matriculado nesta turma.</p>
+                  ) : (
+                    students.map((s) => (
+                      <label
+                        key={s.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "8px 12px",
+                          borderRadius: "var(--radius)",
+                          cursor: "pointer",
+                          background: selectedStudents.has(s.id) ? "var(--primary-light)" : "transparent",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedStudents.has(s.id)}
+                          onChange={() => toggleStudent(s.id)}
+                          style={{ width: 18, height: 18, accentColor: "var(--primary)" }}
+                        />
+                        <span style={{ fontWeight: 500 }}>{s.name}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {assignMode === "select" && selectedStudents.size > 0 && (
+                <p className="text-small text-muted" style={{ marginBottom: 12 }}>
+                  {selectedStudents.size} aluno{selectedStudents.size > 1 ? "s" : ""} selecionado{selectedStudents.size > 1 ? "s" : ""}
+                </p>
+              )}
+
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowPublishModal(false)}
+                  disabled={publishing}
+                  style={{ flex: 1 }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="btn btn-success"
+                  onClick={handlePublish}
+                  disabled={publishing || (assignMode === "select" && selectedStudents.size === 0)}
+                  style={{ flex: 1 }}
+                >
+                  {publishing ? "Publicando..." : "Publicar"}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </>

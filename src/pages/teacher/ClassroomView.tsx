@@ -100,7 +100,14 @@ export default function ClassroomView() {
                   <div className="flex-between">
                     <div>
                       <h3>{a.title}</h3>
-                      <p>{a.questionCount} questões</p>
+                      <p>
+                        {a.questionCount} questões
+                        {a.assignedTo && a.assignedTo.length > 0 && (
+                          <span style={{ marginLeft: 8, fontSize: "0.8rem", color: "var(--primary)", fontWeight: 600 }}>
+                            · {a.assignedTo.length} aluno{a.assignedTo.length > 1 ? "s" : ""}
+                          </span>
+                        )}
+                      </p>
                     </div>
                     <span className={`badge ${a.published ? "badge-success" : "badge-warning"}`}>
                       {a.published ? "Publicada" : "Rascunho"}
