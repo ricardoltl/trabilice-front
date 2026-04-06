@@ -30,7 +30,7 @@ export default function StudentJoin() {
 
   return (
     <div className="container" style={{ paddingTop: "10vh" }}>
-      <button className="back-btn" onClick={() => navigate("/")}>Voltar</button>
+      <button className="back-btn" onClick={() => navigate("/")}>← Voltar</button>
       <h1 style={{ margin: "24px 0" }}>Entrar como Aluno</h1>
       <p className="text-muted mb-16">Digite sua chave de acesso para entrar.</p>
 

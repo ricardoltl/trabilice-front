@@ -30,7 +30,7 @@ export default function Register() {
 
   return (
     <div className="container" style={{ paddingTop: "10vh" }}>
-      <button className="back-btn" onClick={() => navigate("/")}>Voltar</button>
+      <button className="back-btn" onClick={() => navigate("/")}>← Voltar</button>
       <h1 style={{ margin: "24px 0" }}>Cadastro Professor</h1>
 
       {error && <div className="error-msg">{error}</div>}
