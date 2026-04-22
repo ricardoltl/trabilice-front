@@ -8,11 +8,13 @@ function useCurrentTutorialKey(): string | null {
   const isTeacherDashboard = useMatch("/teacher");
   const isClassroomView = useMatch("/teacher/classroom/:id");
   const isCreateActivity = useMatch("/teacher/classroom/:classroomId/new-activity");
+  const isLessonPlan = useMatch("/teacher/lesson-plan/:id");
   const isStudentDashboard = useMatch("/student");
   const isStudentActivity = useMatch("/student/activity/:id");
 
   if (isTeacherDashboard) return "teacher-dashboard";
   if (isCreateActivity) return "teacher-create-activity";
+  if (isLessonPlan) return "teacher-lesson-plan";
   if (isClassroomView) return "teacher-classroom";
   if (isStudentDashboard) return "student-dashboard";
   if (isStudentActivity) return "student-activity";

@@ -9,7 +9,8 @@ export default function ClassroomView() {
   const navigate = useNavigate();
   const [classroom, setClassroom] = useState<any>(null);
   const [activities, setActivities] = useState<any[]>([]);
-  const [tab, setTab] = useState<"activities" | "students">("activities");
+  const [lessonPlans, setLessonPlans] = useState<any[]>([]);
+  const [tab, setTab] = useState<"activities" | "lesson-plans" | "students">("activities");
   const [generatingInvite, setGeneratingInvite] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
@@ -20,12 +21,14 @@ export default function ClassroomView() {
 
   async function loadData() {
     try {
-      const [classRes, actRes] = await Promise.all([
+      const [classRes, actRes, planRes] = await Promise.all([
         api.get(`/classrooms/${id}`),
         api.get(`/activities/classroom/${id}`),
+        api.get(`/lesson-plans/classroom/${id}`),
       ]);
       setClassroom(classRes.data);
       setActivities(actRes.data);
+      setLessonPlans(planRes.data);
     } catch {}
   }
 
@@ -70,6 +73,12 @@ export default function ClassroomView() {
             onClick={() => setTab("activities")}
           >
             Atividades ({activities.length})
+          </button>
+          <button
+            className={`btn btn-small ${tab === "lesson-plans" ? "btn-primary" : "btn-secondary"}`}
+            onClick={() => setTab("lesson-plans")}
+          >
+            Planejamentos ({lessonPlans.length})
           </button>
           <button
             className={`btn btn-small ${tab === "students" ? "btn-primary" : "btn-secondary"}`}
@@ -123,6 +132,48 @@ export default function ClassroomView() {
                       <button className="btn btn-primary btn-small" onClick={() => navigate(`/teacher/activity/${a.id}/results`)}>
                         Ver Resultados
                       </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </>
+        )}
+
+        {tab === "lesson-plans" && (
+          <>
+            <button
+              className="btn btn-primary mb-16"
+              onClick={() => navigate(`/teacher/classroom/${id}/new-lesson-plan`)}
+            >
+              + Novo Planejamento
+            </button>
+
+            {lessonPlans.length === 0 ? (
+              <div className="empty-state">
+                <h3>Nenhum planejamento</h3>
+                <p>Crie um planejamento de aula com o copiloto</p>
+              </div>
+            ) : (
+              lessonPlans.map((p) => (
+                <div
+                  key={p.id}
+                  className="card"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => navigate(`/teacher/lesson-plan/${p.id}`)}
+                >
+                  <div className="flex-between">
+                    <div>
+                      <h3>{p.title}</h3>
+                      <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                        {p.topic ? p.topic.slice(0, 100) : "Sem tema definido"}
+                        {p.topic && p.topic.length > 100 ? "..." : ""}
+                      </p>
+                    </div>
+                    {p.lesson_date && (
+                      <span className="badge badge-success">
+                        {new Date(p.lesson_date).toLocaleDateString("pt-BR", { timeZone: "UTC" })}
+                      </span>
                     )}
                   </div>
                 </div>

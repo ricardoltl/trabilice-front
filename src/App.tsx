@@ -12,6 +12,8 @@ import ClassroomView from "./pages/teacher/ClassroomView";
 import CreateActivity from "./pages/teacher/CreateActivity";
 import EditActivity from "./pages/teacher/EditActivity";
 import ActivityResults from "./pages/teacher/ActivityResults";
+import CreateLessonPlan from "./pages/teacher/CreateLessonPlan";
+import LessonPlanCopilot from "./pages/teacher/LessonPlanCopilot";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentActivity from "./pages/student/StudentActivity";
 import StudentResult from "./pages/student/StudentResult";
@@ -40,6 +42,8 @@ function AppRoutes() {
       <Route path="/teacher/classroom/:classroomId/new-activity" element={<ProtectedRoute role="teacher"><CreateActivity /></ProtectedRoute>} />
       <Route path="/teacher/activity/:id/edit" element={<ProtectedRoute role="teacher"><EditActivity /></ProtectedRoute>} />
       <Route path="/teacher/activity/:id/results" element={<ProtectedRoute role="teacher"><ActivityResults /></ProtectedRoute>} />
+      <Route path="/teacher/classroom/:classroomId/new-lesson-plan" element={<ProtectedRoute role="teacher"><CreateLessonPlan /></ProtectedRoute>} />
+      <Route path="/teacher/lesson-plan/:id" element={<ProtectedRoute role="teacher"><LessonPlanCopilot /></ProtectedRoute>} />
 
       <Route path="/student" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
       <Route path="/student/activity/:id" element={<ProtectedRoute role="student"><StudentActivity /></ProtectedRoute>} />

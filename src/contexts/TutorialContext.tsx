@@ -31,8 +31,8 @@ export const TUTORIAL_STEPS: Record<string, TutorialStep[]> = {
       target: "classroom-code",
     },
     {
-      title: "Atividades e Alunos",
-      text: "Use as abas para alternar entre as Atividades e os Alunos desta turma.",
+      title: "Atividades, Planejamentos e Alunos",
+      text: "Use as abas para alternar entre as Atividades, os Planejamentos de aula (novidade!) e os Alunos desta turma.",
       target: "classroom-tabs",
     },
     {
@@ -41,8 +41,33 @@ export const TUTORIAL_STEPS: Record<string, TutorialStep[]> = {
       target: "btn-criar-atividade",
     },
     {
+      title: "Planejamentos de Aula 🗓️",
+      text: "Na aba Planejamentos, você conversa com um copiloto de IA que te ajuda a rascunhar e refinar o plano de cada aula. Fica tudo salvo na turma.",
+    },
+    {
       title: "Adicionar Alunos 👥",
       text: "Na aba Alunos, gere um link de convite para adicionar novos alunos à turma. Cada link é válido para um aluno.",
+    },
+  ],
+  "teacher-lesson-plan": [
+    {
+      title: "Seu Copiloto de Planejamento 🤖",
+      text: "Aqui você conversa com a IA para rascunhar e refinar o plano desta aula. Um esqueleto inicial já foi gerado com base no tema.",
+    },
+    {
+      title: "Converse à esquerda 💬",
+      text: "Peça mudanças, dê contexto, tire dúvidas. Ex: 'adicione uma dinâmica em grupo', 'torne mais simples para 6º ano', 'sugira uma avaliação rápida'.",
+      target: "copilot-chat",
+    },
+    {
+      title: "O plano vive à direita 📄",
+      text: "A cada mensagem, o copiloto atualiza o documento aqui. Você também pode clicar em 'Editar manualmente' para ajustar o markdown direto.",
+      target: "copilot-plan",
+    },
+    {
+      title: "Data da aula e notas 📅",
+      text: "Defina a data da aula e adicione notas rápidas (materiais, lembretes). Tudo é salvo automaticamente ao sair do campo.",
+      target: "copilot-meta",
     },
   ],
   "teacher-create-activity": [
