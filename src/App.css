@@ -1535,6 +1535,63 @@ a {
   margin: 18px 0;
 }
 
+/* Diff highlighting for pending AI changes */
+.copilot-pending-banner {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  border-bottom: 1px solid #F59E0B;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  animation: slideDown 0.25s ease;
+}
+
+.copilot-pending-banner .banner-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #92400E;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copilot-pending-banner .banner-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.diff-line {
+  padding: 2px 8px;
+  margin: 0;
+  border-left: 3px solid transparent;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+}
+.diff-line.added {
+  background: #DCFCE7;
+  border-left-color: #22C55E;
+  color: #14532D;
+}
+.diff-line.removed {
+  background: #FEE2E2;
+  border-left-color: #EF4444;
+  color: #7F1D1D;
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+.diff-line.context {
+  color: var(--text);
+}
+
+.diff-container {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
 /* Responsive: stack panels vertically on narrow screens */
 @media (max-width: 900px) {
   .copilot-grid {

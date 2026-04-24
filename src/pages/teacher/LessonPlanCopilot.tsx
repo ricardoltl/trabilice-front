@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import { diffLines } from "diff";
 import { useTutorialAutoStart } from "../../components/AliceTutorial";
 import api from "../../services/api";
 
@@ -18,6 +19,7 @@ interface LessonPlan {
   title: string;
   topic: string;
   content: string;
+  pending_content: string | null;
   lesson_date: string | null;
   notes: string | null;
   updated_at: string;
@@ -27,6 +29,26 @@ interface LessonPlan {
 function formatRelativeDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function DiffView({ oldText, newText }: { oldText: string; newText: string }) {
+  const parts = useMemo(() => diffLines(oldText || "", newText || ""), [oldText, newText]);
+
+  return (
+    <div className="diff-container">
+      {parts.map((part, idx) => {
+        const cls = part.added ? "added" : part.removed ? "removed" : "context";
+        const prefix = part.added ? "+ " : part.removed ? "- " : "  ";
+        const lines = part.value.replace(/\n$/, "").split("\n");
+        return lines.map((line, i) => (
+          <div key={`${idx}-${i}`} className={`diff-line ${cls}`}>
+            {prefix}
+            {line || "\u00A0"}
+          </div>
+        ));
+      })}
+    </div>
+  );
 }
 
 export default function LessonPlanCopilot() {
@@ -39,6 +61,7 @@ export default function LessonPlanCopilot() {
   const [editingContent, setEditingContent] = useState(false);
   const [draftContent, setDraftContent] = useState("");
   const [savingMeta, setSavingMeta] = useState(false);
+  const [decidingPending, setDecidingPending] = useState(false);
   const [lessonDate, setLessonDate] = useState("");
   const [notes, setNotes] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -87,25 +110,49 @@ export default function LessonPlanCopilot() {
           ? {
               ...prev,
               content: data.content,
+              pending_content: data.pending_content,
               updated_at: data.updated_at,
               messages: [...prev.messages, data.assistantMessage],
             }
           : prev
       );
-      setDraftContent(data.content);
       inputRef.current?.focus();
     } catch (err: any) {
       setPlan((prev) =>
         prev
-          ? {
-              ...prev,
-              messages: prev.messages.filter((m) => m.id !== optimisticUser.id),
-            }
+          ? { ...prev, messages: prev.messages.filter((m) => m.id !== optimisticUser.id) }
           : prev
       );
       alert(err.response?.data?.error || "Erro ao enviar mensagem");
     } finally {
       setSending(false);
+    }
+  }
+
+  async function acceptChanges() {
+    if (!plan) return;
+    setDecidingPending(true);
+    try {
+      const { data } = await api.post(`/lesson-plans/${id}/accept-changes`);
+      setPlan(data);
+      setDraftContent(data.content);
+    } catch (err: any) {
+      alert(err.response?.data?.error || "Erro ao aceitar alterações");
+    } finally {
+      setDecidingPending(false);
+    }
+  }
+
+  async function rejectChanges() {
+    if (!plan) return;
+    setDecidingPending(true);
+    try {
+      const { data } = await api.post(`/lesson-plans/${id}/reject-changes`);
+      setPlan(data);
+    } catch (err: any) {
+      alert(err.response?.data?.error || "Erro ao descartar alterações");
+    } finally {
+      setDecidingPending(false);
     }
   }
 
@@ -138,6 +185,8 @@ export default function LessonPlanCopilot() {
 
   if (!plan) return <div className="loading">Carregando...</div>;
 
+  const hasPending = !!plan.pending_content;
+
   return (
     <>
       <div className="nav-bar nav-bar-centered">
@@ -151,7 +200,6 @@ export default function LessonPlanCopilot() {
       </div>
 
       <div className="copilot-page">
-        {/* Meta bar: classroom + date + last update */}
         <div className="copilot-meta-bar" data-tutorial-id="copilot-meta">
           <span className="meta-chip">
             <span>📚</span>
@@ -244,12 +292,37 @@ export default function LessonPlanCopilot() {
                 <button
                   className="btn btn-secondary btn-small"
                   onClick={() => setEditingContent(true)}
-                  disabled={!plan.content}
+                  disabled={!plan.content || hasPending}
+                  title={hasPending ? "Decida as alterações pendentes primeiro" : ""}
                 >
                   ✏️ Editar manualmente
                 </button>
               )}
             </div>
+
+            {hasPending && !editingContent && (
+              <div className="copilot-pending-banner">
+                <span className="banner-text">
+                  ✨ O copiloto propôs alterações. Revise o diff e decida.
+                </span>
+                <div className="banner-actions">
+                  <button
+                    className="btn btn-secondary btn-small"
+                    onClick={rejectChanges}
+                    disabled={decidingPending}
+                  >
+                    Descartar
+                  </button>
+                  <button
+                    className="btn btn-primary btn-small"
+                    onClick={acceptChanges}
+                    disabled={decidingPending}
+                  >
+                    {decidingPending ? "..." : "Aceitar"}
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="copilot-plan-body">
               {editingContent ? (
@@ -258,6 +331,8 @@ export default function LessonPlanCopilot() {
                   onChange={(e) => setDraftContent(e.target.value)}
                   autoFocus
                 />
+              ) : hasPending ? (
+                <DiffView oldText={plan.content} newText={plan.pending_content!} />
               ) : plan.content ? (
                 <div className="markdown-body">
                   <ReactMarkdown>{plan.content}</ReactMarkdown>
