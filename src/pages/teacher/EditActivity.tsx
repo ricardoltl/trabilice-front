@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import api, { describeError } from "../../services/api";
 
 interface Question {
   id?: string;
@@ -108,7 +108,7 @@ export default function EditActivity() {
       await api.patch(`/activities/${id}/publish`, body);
       navigate(-1);
     } catch (err: any) {
-      alert(err.response?.data?.error || "Erro ao publicar");
+      alert(describeError(err));
     }
     setPublishing(false);
     setShowPublishModal(false);

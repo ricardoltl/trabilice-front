@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { diffLines } from "diff";
 import { useTutorialAutoStart } from "../../components/AliceTutorial";
-import api from "../../services/api";
+import api, { describeError } from "../../services/api";
 
 interface Message {
   id: string;
@@ -123,7 +123,8 @@ export default function LessonPlanCopilot() {
           ? { ...prev, messages: prev.messages.filter((m) => m.id !== optimisticUser.id) }
           : prev
       );
-      alert(err.response?.data?.error || "Erro ao enviar mensagem");
+      setInput(msg);
+      alert(describeError(err));
     } finally {
       setSending(false);
     }
@@ -137,7 +138,7 @@ export default function LessonPlanCopilot() {
       setPlan(data);
       setDraftContent(data.content);
     } catch (err: any) {
-      alert(err.response?.data?.error || "Erro ao aceitar alterações");
+      alert(describeError(err));
     } finally {
       setDecidingPending(false);
     }
@@ -150,7 +151,7 @@ export default function LessonPlanCopilot() {
       const { data } = await api.post(`/lesson-plans/${id}/reject-changes`);
       setPlan(data);
     } catch (err: any) {
-      alert(err.response?.data?.error || "Erro ao descartar alterações");
+      alert(describeError(err));
     } finally {
       setDecidingPending(false);
     }
@@ -163,7 +164,7 @@ export default function LessonPlanCopilot() {
       setPlan(data);
       setEditingContent(false);
     } catch (err: any) {
-      alert(err.response?.data?.error || "Erro ao salvar");
+      alert(describeError(err));
     }
   }
 
@@ -177,7 +178,7 @@ export default function LessonPlanCopilot() {
       });
       setPlan(data);
     } catch (err: any) {
-      alert(err.response?.data?.error || "Erro ao salvar");
+      alert(describeError(err));
     } finally {
       setSavingMeta(false);
     }
