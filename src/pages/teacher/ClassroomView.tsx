@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTutorialAutoStart } from "../../components/AliceTutorial";
-import api from "../../services/api";
+import api, { describeError } from "../../services/api";
 
 export default function ClassroomView() {
   useTutorialAutoStart("teacher-classroom");
@@ -14,6 +14,16 @@ export default function ClassroomView() {
   const [generatingInvite, setGeneratingInvite] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [savingName, setSavingName] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<
+    | null
+    | { kind: "classroom" }
+    | { kind: "activity"; id: string; title: string }
+    | { kind: "lesson-plan"; id: string; title: string }
+  >(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -50,13 +60,103 @@ export default function ClassroomView() {
     setTimeout(() => setCopied(null), 2000);
   }
 
+  async function startEditName() {
+    setNameDraft(classroom.name);
+    setEditingName(true);
+  }
+
+  async function saveName() {
+    if (!nameDraft.trim() || nameDraft.trim() === classroom.name) {
+      setEditingName(false);
+      return;
+    }
+    setSavingName(true);
+    try {
+      await api.put(`/classrooms/${id}`, { name: nameDraft.trim() });
+      setClassroom({ ...classroom, name: nameDraft.trim() });
+      setEditingName(false);
+    } catch (err: any) {
+      alert(describeError(err));
+    } finally {
+      setSavingName(false);
+    }
+  }
+
+  async function performDelete() {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    try {
+      if (confirmDelete.kind === "classroom") {
+        await api.delete(`/classrooms/${id}`);
+        navigate("/teacher");
+      } else if (confirmDelete.kind === "activity") {
+        await api.delete(`/activities/${confirmDelete.id}`);
+        setActivities((prev) => prev.filter((a) => a.id !== confirmDelete.id));
+        setConfirmDelete(null);
+      } else if (confirmDelete.kind === "lesson-plan") {
+        await api.delete(`/lesson-plans/${confirmDelete.id}`);
+        setLessonPlans((prev) => prev.filter((p) => p.id !== confirmDelete.id));
+        setConfirmDelete(null);
+      }
+    } catch (err: any) {
+      alert(describeError(err));
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   if (!classroom) return <div className="loading">Carregando...</div>;
 
   return (
     <>
       <div className="nav-bar nav-bar-centered">
         <button className="back-btn" onClick={() => navigate("/teacher")}>← Voltar</button>
-        <h2>{classroom.name}</h2>
+        {editingName ? (
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <input
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveName();
+                if (e.key === "Escape") setEditingName(false);
+              }}
+              style={{
+                padding: "6px 10px",
+                border: "2px solid var(--primary)",
+                borderRadius: "var(--radius-sm)",
+                fontSize: "1rem",
+                fontWeight: 600,
+                color: "var(--text)",
+                minWidth: 200,
+              }}
+            />
+            <button className="btn btn-primary btn-small" onClick={saveName} disabled={savingName}>
+              {savingName ? "..." : "Salvar"}
+            </button>
+            <button className="btn btn-secondary btn-small" onClick={() => setEditingName(false)} disabled={savingName}>
+              Cancelar
+            </button>
+          </div>
+        ) : (
+          <h2 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {classroom.name}
+            <button
+              onClick={startEditName}
+              title="Renomear turma"
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem", padding: 4 }}
+            >
+              ✏️
+            </button>
+            <button
+              onClick={() => setConfirmDelete({ kind: "classroom" })}
+              title="Excluir turma"
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem", padding: 4 }}
+            >
+              🗑️
+            </button>
+          </h2>
+        )}
         <span></span>
       </div>
 
@@ -133,6 +233,14 @@ export default function ClassroomView() {
                         Ver Resultados
                       </button>
                     )}
+                    <button
+                      className="btn btn-small"
+                      style={{ marginLeft: "auto", color: "var(--danger)", background: "transparent", border: "1px solid var(--border)" }}
+                      onClick={() => setConfirmDelete({ kind: "activity", id: a.id, title: a.title })}
+                      title="Excluir atividade"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </div>
               ))
@@ -156,25 +264,38 @@ export default function ClassroomView() {
               </div>
             ) : (
               lessonPlans.map((p) => (
-                <div
-                  key={p.id}
-                  className="card"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => navigate(`/teacher/lesson-plan/${p.id}`)}
-                >
-                  <div className="flex-between">
-                    <div>
-                      <h3>{p.title}</h3>
-                      <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-                        {p.topic ? p.topic.slice(0, 100) : "Sem tema definido"}
-                        {p.topic && p.topic.length > 100 ? "..." : ""}
-                      </p>
+                <div key={p.id} className="card">
+                  <div
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/teacher/lesson-plan/${p.id}`)}
+                  >
+                    <div className="flex-between">
+                      <div>
+                        <h3>{p.title}</h3>
+                        <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                          {p.topic ? p.topic.slice(0, 100) : "Sem tema definido"}
+                          {p.topic && p.topic.length > 100 ? "..." : ""}
+                        </p>
+                      </div>
+                      {p.lesson_date && (
+                        <span className="badge badge-success">
+                          {new Date(p.lesson_date).toLocaleDateString("pt-BR", { timeZone: "UTC" })}
+                        </span>
+                      )}
                     </div>
-                    {p.lesson_date && (
-                      <span className="badge badge-success">
-                        {new Date(p.lesson_date).toLocaleDateString("pt-BR", { timeZone: "UTC" })}
-                      </span>
-                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                    <button
+                      className="btn btn-small"
+                      style={{ marginLeft: "auto", color: "var(--danger)", background: "transparent", border: "1px solid var(--border)" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setConfirmDelete({ kind: "lesson-plan", id: p.id, title: p.title });
+                      }}
+                      title="Excluir planejamento"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </div>
               ))
@@ -237,6 +358,56 @@ export default function ClassroomView() {
           </>
         )}
       </div>
+
+      {confirmDelete && (
+        <div className="modal-backdrop" onClick={() => !deleting && setConfirmDelete(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ marginBottom: 12 }}>Confirmar exclusão</h3>
+            <p style={{ marginBottom: 16, color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+              {confirmDelete.kind === "classroom" && (
+                <>
+                  Excluir a turma <strong>{classroom.name}</strong>?
+                  <br />
+                  Todas as atividades, planejamentos, convites e matrículas dessa turma serão removidos.
+                  Esta ação não pode ser desfeita.
+                </>
+              )}
+              {confirmDelete.kind === "activity" && (
+                <>
+                  Excluir a atividade <strong>{confirmDelete.title}</strong>?
+                  <br />
+                  Todas as submissões e respostas dos alunos serão perdidas. Esta ação não pode ser desfeita.
+                </>
+              )}
+              {confirmDelete.kind === "lesson-plan" && (
+                <>
+                  Excluir o planejamento <strong>{confirmDelete.title}</strong>?
+                  <br />
+                  Todas as mensagens com o copiloto serão perdidas. Esta ação não pode ser desfeita.
+                </>
+              )}
+            </p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setConfirmDelete(null)}
+                disabled={deleting}
+                style={{ flex: 1 }}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn"
+                onClick={performDelete}
+                disabled={deleting}
+                style={{ flex: 1, background: "var(--danger)", color: "white" }}
+              >
+                {deleting ? "Excluindo..." : "Excluir"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
