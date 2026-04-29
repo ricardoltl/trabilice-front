@@ -43,7 +43,6 @@ export default function GoogleSignInButton({ onError, text = "continue_with" }: 
         onSuccess={handleSuccess}
         onError={() => onError?.("Falha ao autenticar com o Google")}
         text={text}
-        locale="pt_BR"
         shape="rectangular"
         size="large"
         width="320"
