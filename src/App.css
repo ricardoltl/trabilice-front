@@ -1232,6 +1232,26 @@ a {
   border: 2px solid white;
 }
 
+/* ── Auth divider (Google / email) ──────────────────────── */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
 /* ── Lesson Plan Copilot ─────────────────────────────────── */
 .copilot-page {
   min-height: calc(100vh - 72px);

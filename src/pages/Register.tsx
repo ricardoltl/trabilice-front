@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -34,6 +35,10 @@ export default function Register() {
       <h1 style={{ margin: "24px 0" }}>Cadastro Professor</h1>
 
       {error && <div className="error-msg">{error}</div>}
+
+      <GoogleSignInButton text="signup_with" onError={setError} />
+
+      <div className="auth-divider"><span>ou</span></div>
 
       <form onSubmit={handleSubmit}>
         <div className="input-group">

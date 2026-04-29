@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { TutorialProvider } from "./contexts/TutorialContext";
 import AliceTutorial from "./components/AliceTutorial";
@@ -53,14 +54,17 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <TutorialProvider>
-          <AppRoutes />
-          <AliceTutorial />
-        </TutorialProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <BrowserRouter>
+        <AuthProvider>
+          <TutorialProvider>
+            <AppRoutes />
+            <AliceTutorial />
+          </TutorialProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </GoogleOAuthProvider>
   );
 }
