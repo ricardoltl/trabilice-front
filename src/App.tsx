@@ -3,9 +3,13 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { TutorialProvider } from "./contexts/TutorialContext";
 import AliceTutorial from "./components/AliceTutorial";
+import EmailVerificationBanner from "./components/EmailVerificationBanner";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
 import StudentJoin from "./pages/student/StudentJoin";
 import AcceptInvite from "./pages/student/AcceptInvite";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
@@ -35,6 +39,9 @@ function AppRoutes() {
       <Route path="/" element={user ? <Navigate to={user.role === "teacher" ? "/teacher" : "/student"} /> : <Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/join" element={<StudentJoin />} />
       <Route path="/invite/:token" element={<AcceptInvite />} />
 
@@ -60,6 +67,7 @@ export default function App() {
       <BrowserRouter>
         <AuthProvider>
           <TutorialProvider>
+            <EmailVerificationBanner />
             <AppRoutes />
             <AliceTutorial />
           </TutorialProvider>

@@ -91,6 +91,10 @@ export default function Login() {
       </form>
 
       <p className="text-center mt-16 text-small text-muted">
+        <Link to="/forgot-password">Esqueci minha senha</Link>
+      </p>
+
+      <p className="text-center text-small text-muted" style={{ marginTop: 8 }}>
         Não tem conta? <Link to="/register">Cadastre-se</Link>
       </p>
     </div>

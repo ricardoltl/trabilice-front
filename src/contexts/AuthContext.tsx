@@ -6,6 +6,7 @@ interface User {
   name: string;
   email?: string;
   role: "teacher" | "student";
+  email_verified?: boolean;
 }
 
 interface AuthContextData {
@@ -13,6 +14,7 @@ interface AuthContextData {
   token: string | null;
   login: (token: string, user: User) => void;
   logout: () => void;
+  updateUser: (patch: Partial<User>) => void;
   isTeacher: boolean;
 }
 
@@ -45,8 +47,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
+  function updateUser(patch: Partial<User>) {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      localStorage.setItem("user", JSON.stringify(next));
+      return next;
+    });
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isTeacher: user?.role === "teacher" }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateUser, isTeacher: user?.role === "teacher" }}>
       {children}
     </AuthContext.Provider>
   );
